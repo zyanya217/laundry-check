@@ -1,0 +1,13 @@
+{
+  "routes": [
+    {
+      "routePath": "/api/forecast",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/forecast.ts:onRequestGet"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "laundry-check",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "predev": "tsx scripts/ensure-districts.ts",
+    "prebuild": "tsx scripts/ensure-districts.ts",
+    "dev": "vite",
+    "build": "vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p functions/tsconfig.json && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "probe": "tsx scripts/probe.ts",
+    "gen:districts": "tsx scripts/gen-districts.ts"
+  },
+  "dependencies": {
+    "vue": "^3.5.45"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261114.1",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "^24.0.0",
+    "@vitejs/plugin-vue": "^6.0.11",
+    "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0",
+    "vue-tsc": "^3.3.14"
+  }
+}
