@@ -89,17 +89,38 @@ describe('forecast endpoint', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.rows).toHaveLength(6)
+    expect(body.weekRows).toHaveLength(6)
     expect(JSON.stringify(body)).not.toContain('key')
   })
 
-  it('sends the key only to the CWA host', async () => {
-    let seen = ''
+  it('asks for the short-range and the one-week dataset, sending the key only to the CWA host', async () => {
+    const seen: string[] = []
     await handleForecastRequest(params('臺北市', '南港區'), 'secret', (u) => {
-      seen = u
+      seen.push(u)
       return ok()
     })
-    expect(seen.startsWith('https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-061?')).toBe(true)
-    expect(seen).toContain('Authorization=secret')
+    expect(seen).toHaveLength(2)
+    expect(seen.every((u) => u.startsWith('https://opendata.cwa.gov.tw/api/v1/rest/datastore/'))).toBe(true)
+    expect(seen.some((u) => u.includes('/F-D0047-061?'))).toBe(true)
+    expect(seen.some((u) => u.includes('/F-D0047-063?'))).toBe(true)
+    expect(seen.every((u) => u.includes('Authorization=secret'))).toBe(true)
+  })
+
+  it('still answers with the short-range forecast when the one-week dataset fails', async () => {
+    const res = await handleForecastRequest(params('臺北市', '南港區'), 'k', (u) =>
+      u.includes('/F-D0047-063?') ? Promise.resolve(new Response('', { status: 500 })) : ok(),
+    )
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.rows).toHaveLength(6)
+    expect(body.weekRows).toEqual([])
+  })
+
+  it('fails when the short-range dataset fails, even if the one-week dataset works', async () => {
+    const res = await handleForecastRequest(params('臺北市', '南港區'), 'k', (u) =>
+      u.includes('/F-D0047-061?') ? Promise.resolve(new Response('', { status: 500 })) : ok(),
+    )
+    expect(res.status).toBe(502)
   })
 
   it('rejects unknown counties and odd district strings before calling CWA', async () => {

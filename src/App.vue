@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import BestDays from './components/BestDays.vue'
 import DryMeter from './components/DryMeter.vue'
 import HourlyChart from './components/HourlyChart.vue'
 import SettingsSheet from './components/SettingsSheet.vue'
@@ -12,7 +13,8 @@ import { settings } from './composables/useSettings'
 import { useTheme } from './composables/useTheme'
 import { analyze } from './lib/analyze'
 import { hh, taipeiClock, taipeiNowIdx, wallHour } from './lib/time'
-import { buildWindow } from './lib/window'
+import { bestOffset, evaluateWeek } from './lib/week'
+import { buildWindow, mergeRows } from './lib/window'
 
 useTheme()
 const forecast = useForecast()
@@ -28,6 +30,19 @@ const win = computed(() =>
   buildWindow(forecast.rows.value, taipeiNowIdx(new Date(tick.value)), settings.startHour, settings.collectHour),
 )
 const analysis = computed(() => (win.value.rows.length >= 2 ? analyze(win.value.rows, settings.covered) : null))
+
+// The short-range forecast is more precise, so it wins wherever it overlaps the one-week forecast.
+const weekPicks = computed(() =>
+  evaluateWeek(
+    mergeRows(forecast.rows.value, forecast.weekRows.value),
+    taipeiNowIdx(new Date(tick.value)),
+    settings.startHour,
+    settings.collectHour,
+    settings.covered,
+  ),
+)
+const bestDay = computed(() => bestOffset(weekPicks.value))
+const hasWeek = computed(() => weekPicks.value.some((p) => p.offset > 0 && p.analysis))
 
 const loading = computed(() => forecast.status.value === 'loading')
 const startNote = computed(() => (win.value.startMoved ? t('from_note', { t: hh(wallHour(win.value.startIdx)) }) : null))
@@ -97,6 +112,7 @@ const updated = computed(() => (forecast.fetchedAt.value ? taipeiClock(forecast.
       <WhenBar :collect-day="win.collectDay" :start-note="startNote" />
       <HourlyChart :rows="win.rows" :label="chartLabel" />
       <DryMeter :score="analysis.score" :dry="analysis.dry" :when-text="collectWhen" :collect-time="hh(settings.collectHour)" />
+      <BestDays v-if="hasWeek" :picks="weekPicks" :best="bestDay" />
     </div>
 
     <footer class="flex flex-wrap justify-between gap-x-3.5 gap-y-1 text-xs text-muted">
