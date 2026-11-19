@@ -27,5 +27,32 @@ export const COUNTY_DATASETS: Record<string, string> = {
   金門縣: 'F-D0047-085',
 }
 
+// The "未來1週" dataset of each county, used for the seven-day suggestion. Same source and same caveat as
+// above: the IDs come from a third-party table, so confirm them against your own API key.
+export const COUNTY_WEEK_DATASETS: Record<string, string> = {
+  宜蘭縣: 'F-D0047-003',
+  桃園市: 'F-D0047-007',
+  新竹縣: 'F-D0047-011',
+  苗栗縣: 'F-D0047-015',
+  彰化縣: 'F-D0047-019',
+  南投縣: 'F-D0047-023',
+  雲林縣: 'F-D0047-027',
+  嘉義縣: 'F-D0047-031',
+  屏東縣: 'F-D0047-035',
+  臺東縣: 'F-D0047-039',
+  花蓮縣: 'F-D0047-043',
+  澎湖縣: 'F-D0047-047',
+  基隆市: 'F-D0047-051',
+  新竹市: 'F-D0047-055',
+  嘉義市: 'F-D0047-059',
+  臺北市: 'F-D0047-063',
+  高雄市: 'F-D0047-067',
+  新北市: 'F-D0047-071',
+  臺中市: 'F-D0047-075',
+  臺南市: 'F-D0047-079',
+  連江縣: 'F-D0047-083',
+  金門縣: 'F-D0047-087',
+}
+
 export const DEFAULT_COUNTY = '臺北市'
 export const DEFAULT_DISTRICT = '南港區'

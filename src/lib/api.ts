@@ -4,6 +4,8 @@ export interface ForecastPayload {
   county: string
   district: string
   rows: HourlyRow[]
+  /** One-week forecast, coarser than `rows`. Missing or empty when it could not be read. */
+  weekRows?: HourlyRow[]
   fetchedAt: string
 }
 

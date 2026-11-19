@@ -10,9 +10,25 @@ export interface HangWindow {
   startMoved: boolean
 }
 
-/** Hours from the start of hanging up to (and including) the collect hour. */
-export function buildWindow(rows: HourlyRow[], nowIdx: number, startHour: number, collectHour: number): HangWindow {
-  const wanted = Math.floor(nowIdx / 24) * 24 + startHour
+/** Combines two forecasts by hour. Where both have an hour, `primary` wins. */
+export function mergeRows(primary: HourlyRow[], fallback: HourlyRow[]): HourlyRow[] {
+  const byIdx = new Map(fallback.map((r) => [r.idx, r]))
+  for (const r of primary) byIdx.set(r.idx, r)
+  return [...byIdx.values()].sort((a, b) => a.idx - b.idx)
+}
+
+/**
+ * Hours from the start of hanging up to (and including) the collect hour.
+ * `dayOffset` moves the window forward by whole days (0 is tonight, 1 is tomorrow night, ...).
+ */
+export function buildWindow(
+  rows: HourlyRow[],
+  nowIdx: number,
+  startHour: number,
+  collectHour: number,
+  dayOffset = 0,
+): HangWindow {
+  const wanted = Math.floor(nowIdx / 24) * 24 + dayOffset * 24 + startHour
   const startIdx = Math.max(wanted, nowIdx + 1)
   let endIdx = Math.floor(startIdx / 24) * 24 + collectHour
   if (endIdx <= startIdx) endIdx += 24
