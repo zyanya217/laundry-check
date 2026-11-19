@@ -4,11 +4,15 @@
 
 🔗 **線上使用:<https://laundry-check.pages.dev/>**
 
-<img width="223" height="484" alt="截圖 2026-11-18 下午6 15 34" src="https://github.com/user-attachments/assets/ee0590c9-6b17-40ef-a6b5-e47d22b5ea0e" />
+<img width="178" height="387" alt="截圖 2026-11-18 下午6 15 34" src="https://github.com/user-attachments/assets/ee0590c9-6b17-40ef-a6b5-e47d22b5ea0e" />
 
-<img width="223" height="484" alt="截圖 2026-11-18 下午6 16 07" src="https://github.com/user-attachments/assets/950c88b2-bfb8-4795-b901-7655f0891a7d" />
+<img width="178" height="387" alt="截圖 2026-11-19 上午10 05 13" src="https://github.com/user-attachments/assets/3d03adcd-9c73-46e4-a2a8-fcd7cf0a1022" />
 
-<img width="223" height="484" alt="截圖 2026-11-18 下午6 16 34" src="https://github.com/user-attachments/assets/5ab26636-e68b-4743-ab8a-29ffbd938b3b" />
+<img width="178" height="387" alt="截圖 2026-11-18 下午6 16 34" src="https://github.com/user-attachments/assets/5ab26636-e68b-4743-ab8a-29ffbd938b3b" />
+
+<img width="178" height="387" alt="截圖 2026-11-19 上午10 06 21" src="https://github.com/user-attachments/assets/499eedc7-7b62-43f8-b60c-fa553a4ebc10" />
+
+
 
 ## 為什麼做這個
 
