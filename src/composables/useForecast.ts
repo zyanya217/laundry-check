@@ -14,6 +14,7 @@ function demoScene(): DemoScene | null {
 
 export function useForecast() {
   const rows = ref<HourlyRow[]>([])
+  const weekRows = ref<HourlyRow[]>([])
   const status = ref<ForecastStatus>('loading')
   const errorCode = ref('')
   const fetchedAt = ref('')
@@ -26,6 +27,7 @@ export function useForecast() {
     const scene = demoScene()
     if (scene) {
       rows.value = makeDemo(scene)
+      weekRows.value = []
       isDemo.value = true
       status.value = 'ready'
       return
@@ -36,6 +38,7 @@ export function useForecast() {
     try {
       const payload = await fetchForecast(settings.county, settings.district, mine.signal)
       rows.value = payload.rows
+      weekRows.value = payload.weekRows ?? []
       fetchedAt.value = payload.fetchedAt
       loadedAt = Date.now()
       status.value = 'ready'
@@ -59,5 +62,5 @@ export function useForecast() {
     controller?.abort()
   })
 
-  return { rows, status, errorCode, fetchedAt, isDemo, reload: load }
+  return { rows, weekRows, status, errorCode, fetchedAt, isDemo, reload: load }
 }
