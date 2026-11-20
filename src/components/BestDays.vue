@@ -80,7 +80,7 @@ const shirts = computed(() =>
         <b class="text-[15px] leading-snug font-bold">{{ dayName(p) }}</b>
         <span class="font-mono text-[11px] leading-snug text-muted">{{ dayDate(p) }}</span>
         <template v-if="p.analysis">
-          <span class="font-display mt-0.5 text-xl leading-snug" :class="tone[p.analysis.level]">{{ t(`dry_${p.analysis.dry}` as 'dry_dry') }}</span>
+          <span class="font-display mt-0.5 text-base leading-snug" :class="tone[p.analysis.level]">{{ t(`dry_${p.analysis.dry}` as 'dry_dry') }}</span>
           <span class="font-mono text-xs leading-snug text-muted">{{ t('best_rain') }} {{ Math.round(p.maxPop) }}%</span>
         </template>
         <span v-else class="mt-1 text-[13px] text-muted">{{ t('best_nodata') }}</span>

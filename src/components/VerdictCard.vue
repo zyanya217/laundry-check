@@ -42,7 +42,7 @@ const fill = computed(() => Math.max(6, Math.min(100, (props.analysis.score / SC
 <template>
   <section class="flex flex-col" aria-live="polite">
     <span class="font-mono text-xs tracking-[0.04em] text-muted">{{ dateLabel }}</span>
-    <h1 class="font-display mt-0.5 text-[42px] leading-[1.2] text-balance" :class="titleTone[analysis.level]">
+    <h1 class="font-display mt-0.5 text-[32px] leading-[1.25] text-balance" :class="titleTone[analysis.level]">
       {{ t(`v_${analysis.level}` as 'v_ok') }}
     </h1>
     <p class="mt-2 text-[16px] text-pretty">{{ reason }}</p>
