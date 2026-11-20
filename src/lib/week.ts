@@ -2,9 +2,11 @@ import type { HourlyRow } from '../../server/cwa'
 import { analyze, type Analysis, type Level } from './analyze'
 import { buildWindow } from './window'
 
-export const WEEK_DAYS = 7
-/** Beyond this many days ahead the forecast is coarse and less reliable. */
-export const NEAR_DAYS = 3
+/**
+ * How many evenings to try. The short-range forecast only reaches about three to four days (it grows through the day as the
+ * forecast is reissued), and the one-week dataset has no rain probability past that, so the last ones are often unjudged.
+ */
+export const WEEK_DAYS = 4
 /** A day is only judged when at least this share of its hours has forecast data. */
 const MIN_COVERAGE = 0.6
 
@@ -15,12 +17,11 @@ export interface DayPick {
   analysis: Analysis | null
   /** Highest rain probability in the window, for display. */
   maxPop: number
-  far: boolean
 }
 
 const levelRank: Record<Level, number> = { ok: 0, mid: 1, bad: 2 }
 
-/** Judges each of the next seven evenings with the same window the main verdict uses (start hour to collect hour). */
+/** Judges each of the next evenings with the same window the main verdict uses (start hour to collect hour). */
 export function evaluateWeek(
   rows: HourlyRow[],
   nowIdx: number,
@@ -38,7 +39,6 @@ export function evaluateWeek(
       dayNumber: Math.floor(w.startIdx / 24),
       analysis: enough ? analyze(w.rows, covered) : null,
       maxPop: enough ? Math.max(...w.rows.map((r) => r.pop)) : 0,
-      far: offset >= NEAR_DAYS,
     })
   }
   return picks
@@ -58,4 +58,11 @@ export function bestOffset(picks: DayPick[]): number | null {
       a.offset - b.offset,
   )
   return sorted[0].analysis.level === 'bad' ? null : sorted[0].offset
+}
+
+/** Drops the trailing days that could not be judged, so the list only has days with a forecast. */
+export function judgedPicks(picks: DayPick[]): DayPick[] {
+  let last = picks.length - 1
+  while (last >= 0 && picks[last].analysis === null) last--
+  return picks.slice(0, last + 1)
 }

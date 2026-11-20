@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { HourlyRow } from '../../server/cwa'
-import { bestOffset, evaluateWeek } from './week'
+import { bestOffset, evaluateWeek, judgedPicks } from './week'
 
 // idx 480 is a Taipei midnight; "now" is 13:00 on that day.
 const MIDNIGHT = 480
@@ -17,17 +17,12 @@ const week = (modes: Mode[]): HourlyRow[] =>
   Array.from({ length: modes.length * 24 }, (_, i) => hourRow(MIDNIGHT + i, modes[Math.floor(i / 24)]))
 
 describe('evaluateWeek', () => {
-  it('judges seven evenings, each from the start hour to the next morning', () => {
+  it('judges four evenings, each from the start hour to the next morning', () => {
     const picks = evaluateWeek(week(Array(9).fill('clear')), NOW, 21, 8, false)
-    expect(picks).toHaveLength(7)
-    expect(picks.map((p) => p.offset)).toEqual([0, 1, 2, 3, 4, 5, 6])
+    expect(picks).toHaveLength(4)
+    expect(picks.map((p) => p.offset)).toEqual([0, 1, 2, 3])
     expect(picks.every((p) => p.analysis?.level === 'ok')).toBe(true)
     expect(picks[1].dayNumber - picks[0].dayNumber).toBe(1)
-  })
-
-  it('marks days beyond the near range as far', () => {
-    const picks = evaluateWeek(week(Array(9).fill('clear')), NOW, 21, 8, false)
-    expect(picks.map((p) => p.far)).toEqual([false, false, false, true, true, true, true])
   })
 
   it('leaves a day without enough forecast unjudged', () => {
@@ -35,14 +30,21 @@ describe('evaluateWeek', () => {
     expect(picks[0].analysis).not.toBeNull()
     expect(picks[1].analysis).not.toBeNull()
     expect(picks[2].analysis).toBeNull()
-    expect(picks[6].analysis).toBeNull()
+    expect(picks[3].analysis).toBeNull()
+  })
+
+  it('shows only the days that have a forecast, three or four of them', () => {
+    expect(judgedPicks(evaluateWeek(week(['clear', 'clear', 'clear']), NOW, 21, 8, false))).toHaveLength(2)
+    expect(judgedPicks(evaluateWeek(week(Array(4).fill('clear')), NOW, 21, 8, false))).toHaveLength(3)
+    expect(judgedPicks(evaluateWeek(week(Array(5).fill('clear')), NOW, 21, 8, false))).toHaveLength(4)
+    expect(judgedPicks([])).toEqual([])
   })
 
   it('a rainy day spoils both its own evening and the evening before, since the window ends the next morning', () => {
     // Day 3 rains. The evening of day 2 ends in day 3's morning rain, and the evening of day 3 is itself rainy.
     const modes: Mode[] = ['clear', 'clear', 'clear', 'rain', 'clear', 'clear', 'clear', 'clear', 'clear']
     const picks = evaluateWeek(week(modes), NOW, 21, 8, false)
-    expect(picks.map((p) => p.analysis?.level)).toEqual(['ok', 'ok', 'bad', 'bad', 'ok', 'ok', 'ok'])
+    expect(picks.map((p) => p.analysis?.level)).toEqual(['ok', 'ok', 'bad', 'bad'])
     expect(picks[3].maxPop).toBe(85)
   })
 })

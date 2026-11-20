@@ -2,18 +2,21 @@
 import { computed } from 'vue'
 import type { Level } from '../lib/analyze'
 import type { DayPick } from '../lib/week'
-import { hh } from '../lib/time'
 import { settings } from '../composables/useSettings'
 import { t } from '../composables/useI18n'
 
 const props = defineProps<{ picks: DayPick[]; best: number | null }>()
 
 // Full class strings so Tailwind can see them.
-const chip: Record<Level, string> = {
-  ok: 'bg-ok-bg text-ok',
-  mid: 'bg-mid-bg text-mid',
-  bad: 'bg-bad-bg text-bad',
+const tone: Record<Level, string> = { ok: 'text-ok', mid: 'text-mid', bad: 'text-bad' }
+const shirtFill: Record<Level, string> = { ok: 'fill-ok', mid: 'fill-mid', bad: 'fill-bad' }
+// A smile, a flat mouth and a frown, so good and bad do not rely on colour alone.
+const mouth: Record<Level, string> = {
+  ok: 'M16 25 Q20 29.5 24 25',
+  mid: 'M17 26.5 L23 26.5',
+  bad: 'M16 28.5 Q20 24 24 28.5',
 }
+const SHIRT = 'M12 3 L4 8 L7 14 L11 12 L11 32 L29 32 L29 12 L33 14 L36 8 L28 3 C26 6 14 6 12 3 Z'
 
 const locale = computed(() => (settings.lang === 'zh' ? 'zh-TW' : 'en'))
 
@@ -28,49 +31,63 @@ function dayDate(p: DayPick): string {
   return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`
 }
 
-const headline = computed(() => {
-  const pick = props.picks.find((p) => p.offset === props.best)
-  return pick ? t('best_pick', { d: dayName(pick) }) : t('best_none')
-})
-const showFarNote = computed(() => props.picks.some((p) => p.far && p.analysis))
+// The washing line sags a little in the middle; each shirt hangs from the point of the curve above it.
+const W = 350
+const sag = (x: number): number => {
+  const u = x / W
+  return (1 - u) ** 2 * 10 + 2 * (1 - u) * u * 26 + u * u * 10
+}
+const shirts = computed(() =>
+  props.picks.map((p, i) => {
+    const cx = (W * (2 * i + 1)) / (2 * props.picks.length)
+    return {
+      key: p.offset,
+      cx,
+      cy: sag(cx),
+      level: p.analysis?.level ?? null,
+    }
+  }),
+)
 </script>
 
 <template>
-  <section class="flex min-w-0 flex-col gap-3 rounded-[18px] border border-line bg-surface p-4">
-    <div class="flex flex-col gap-1">
-      <h2 class="text-[13px] font-medium tracking-[0.06em] text-muted">{{ t('best_title') }}</h2>
-      <p class="text-[18px] leading-snug font-bold text-balance" :class="best === null ? 'text-mid' : ''">{{ headline }}</p>
-    </div>
+  <section class="flex min-w-0 flex-col gap-1.5">
+    <h2 class="text-xs font-medium tracking-[0.06em] text-muted">{{ t('best_title') }}</h2>
 
-    <ul class="flex flex-col gap-1">
+    <svg viewBox="0 0 350 74" class="block h-auto w-full" aria-hidden="true">
+      <path d="M0 10 Q175 26 350 10" fill="none" class="stroke-fg" stroke-width="1.5" />
+      <g v-for="s in shirts" :key="s.key">
+        <g :transform="`translate(${s.cx - 22} ${s.cy + 5}) scale(1.1)`">
+          <path :d="SHIRT" :class="s.level ? shirtFill[s.level] : 'fill-line'" />
+          <template v-if="s.level">
+            <circle cx="16" cy="20" r="1.3" fill="#fff" />
+            <circle cx="24" cy="20" r="1.3" fill="#fff" />
+            <path :d="mouth[s.level]" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" />
+          </template>
+        </g>
+        <rect :x="s.cx - 12" :y="s.cy - 2" width="4" height="10" rx="1.5" class="fill-fg" />
+        <rect :x="s.cx + 8" :y="s.cy - 2" width="4" height="10" rx="1.5" class="fill-fg" />
+      </g>
+    </svg>
+
+    <ul class="-mt-1.5 grid gap-1" :style="{ gridTemplateColumns: `repeat(${picks.length}, minmax(0, 1fr))` }">
       <li
         v-for="p in picks"
         :key="p.offset"
-        class="flex items-center gap-3 rounded-xl px-3 py-2"
-        :class="p.offset === best ? 'bg-surface-2 ring-1 ring-ok' : ''"
+        class="flex flex-col items-center gap-0.5 rounded-[18px] pt-2 pb-2.5"
+        :class="p.offset === best ? 'bg-surface-2' : ''"
       >
-        <div class="w-[68px] flex-none">
-          <b class="block text-[15px] font-medium">{{ dayName(p) }}</b>
-          <span class="block font-mono text-xs text-muted">{{ dayDate(p) }}</span>
-        </div>
-
+        <b class="text-[15px] leading-snug font-bold">{{ dayName(p) }}</b>
+        <span class="font-mono text-[11px] leading-snug text-muted">{{ dayDate(p) }}</span>
         <template v-if="p.analysis">
-          <span class="inline-flex min-h-7 items-center rounded-full px-2.5 text-[13px] font-medium whitespace-nowrap" :class="chip[p.analysis.level]">
-            {{ t(`v_${p.analysis.level}` as 'v_ok') }}
-          </span>
-          <span v-if="p.offset === best" class="text-xs font-bold text-ok">{{ t('best_top') }}</span>
-          <div class="ml-auto min-w-0 text-right" :class="p.far ? 'opacity-70' : ''">
-            <span class="block text-[14px]">{{ t(`dry_${p.analysis.dry}` as 'dry_dry') }}</span>
-            <span class="block font-mono text-xs text-muted">{{ t('best_rain') }} {{ Math.round(p.maxPop) }}%</span>
-          </div>
+          <span class="font-display mt-0.5 text-xl leading-snug" :class="tone[p.analysis.level]">{{ t(`dry_${p.analysis.dry}` as 'dry_dry') }}</span>
+          <span class="font-mono text-xs leading-snug text-muted">{{ t('best_rain') }} {{ Math.round(p.maxPop) }}%</span>
         </template>
-        <span v-else class="ml-auto text-[13px] text-muted">{{ t('best_nodata') }}</span>
+        <span v-else class="mt-1 text-[13px] text-muted">{{ t('best_nodata') }}</span>
+        <span class="mt-1 block h-[18px]">
+          <span v-if="p.offset === best" class="rounded-full bg-ok px-2.5 text-[11px] leading-[1.6] font-bold text-white">{{ t('best_top') }}</span>
+        </span>
       </li>
     </ul>
-
-    <p class="text-xs text-muted">
-      {{ t('best_hint', { s: hh(settings.startHour), c: hh(settings.collectHour) }) }}
-      <template v-if="showFarNote">{{ t('best_far') }}</template>
-    </p>
   </section>
 </template>

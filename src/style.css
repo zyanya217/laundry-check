@@ -3,41 +3,42 @@
 /* Colour tokens. The theme is switched by <html data-theme>, so components use semantic classes
    (bg-surface, text-muted, ...) and never need dark: variants. */
 :root {
-  --bg: #f2f5f9;
+  --bg: #f9fbfb;
   --surface: #ffffff;
-  --surface-2: #e8edf4;
-  --fg: #16202d;
-  --muted: #586577;
-  --line: #d3dae5;
-  --accent: #2a68d4;
+  --surface-2: #e6f2ef;
+  --fg: #1d2b30;
+  --muted: #5b6b70;
+  --line: #dce7e5;
+  --accent: #1a7f52;
   --rain: #3573d6;
   --humid: #7a56c6;
-  --ok: #1b7550;
+  --ok: #1a7f52;
   --ok-bg: #dcf2e6;
-  --mid: #8a5700;
+  --mid: #a85a00;
   --mid-bg: #faecc6;
-  --bad: #a53626;
+  --bad: #c0392b;
   --bad-bg: #f8dbd5;
-  --scrim: rgba(10, 16, 26, 0.5);
+  --scrim: rgba(29, 43, 48, 0.45);
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --bg: #0d131b;
-  --surface: #151d28;
-  --surface-2: #1e2835;
-  --fg: #e7ecf3;
-  --muted: #93a0b2;
-  --line: #2a3646;
-  --accent: #6c9ff5;
-  --rain: #6c9ff5;
+  --bg: #0f1719;
+  --surface: #162126;
+  --surface-2: #1f2d33;
+  --fg: #e6eef0;
+  --muted: #9bb0b5;
+  --line: #2a3a40;
+  --accent: #4fc38a;
+  --rain: #8fb7ff;
   --humid: #b49af0;
-  --ok: #5fd09a;
+  --ok: #4fc38a;
   --ok-bg: #123a2a;
-  --mid: #f0c04a;
+  --mid: #f0b24a;
   --mid-bg: #3a2d0c;
-  --bad: #ff917f;
+  --bad: #ff8d7e;
   --bad-bg: #431b15;
+  --scrim: rgba(0, 0, 0, 0.6);
   color-scheme: dark;
 }
 
@@ -58,6 +59,7 @@
   --color-bad: var(--bad);
   --color-bad-bg: var(--bad-bg);
   --color-scrim: var(--scrim);
+  --font-display: 'Huninn', 'Noto Sans TC', system-ui, sans-serif;
   --font-sans: 'Noto Sans TC', system-ui, -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
   --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }

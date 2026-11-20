@@ -1,19 +1,16 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import BestDays from './components/BestDays.vue'
-import DryMeter from './components/DryMeter.vue'
 import HourlyChart from './components/HourlyChart.vue'
 import SettingsSheet from './components/SettingsSheet.vue'
 import VerdictCard from './components/VerdictCard.vue'
-import WeatherSymbols from './components/WeatherSymbols.vue'
-import WhenBar from './components/WhenBar.vue'
 import { t } from './composables/useI18n'
 import { useForecast } from './composables/useForecast'
 import { settings } from './composables/useSettings'
 import { useTheme } from './composables/useTheme'
 import { analyze } from './lib/analyze'
 import { hh, taipeiClock, taipeiNowIdx, wallHour } from './lib/time'
-import { bestOffset, evaluateWeek } from './lib/week'
+import { bestOffset, evaluateWeek, judgedPicks } from './lib/week'
 import { buildWindow, mergeRows } from './lib/window'
 
 useTheme()
@@ -41,8 +38,10 @@ const weekPicks = computed(() =>
     settings.covered,
   ),
 )
-const bestDay = computed(() => bestOffset(weekPicks.value))
-const hasWeek = computed(() => weekPicks.value.some((p) => p.offset > 0 && p.analysis))
+// Only days with a forecast are shown, so there are three or four equal columns and never an empty one.
+const shownPicks = computed(() => judgedPicks(weekPicks.value))
+const bestDay = computed(() => bestOffset(shownPicks.value))
+const hasWeek = computed(() => shownPicks.value.some((p) => p.offset > 0))
 
 const loading = computed(() => forecast.status.value === 'loading')
 const startNote = computed(() => (win.value.startMoved ? t('from_note', { t: hh(wallHour(win.value.startIdx)) }) : null))
@@ -55,32 +54,35 @@ const chartLabel = computed(() => {
     p: Math.round(Math.max(...rows.map((r) => r.pop))),
   })
 })
-const collectWhen = computed(() => t(win.value.collectDay))
+// "Tonight 11/20 Fri": the date of the evening being judged. The day number counts wall-clock days, so formatting it in UTC prints the Taipei date.
+const dateLabel = computed(() => {
+  const d = new Date(Math.floor(win.value.startIdx / 24) * 86_400_000)
+  const weekday = new Intl.DateTimeFormat(settings.lang === 'zh' ? 'zh-TW' : 'en', { weekday: 'short', timeZone: 'UTC' }).format(d)
+  return `${t('tonight')} ${d.getUTCMonth() + 1}/${d.getUTCDate()} ${weekday}`
+})
 const updated = computed(() => (forecast.fetchedAt.value ? taipeiClock(forecast.fetchedAt.value) : ''))
 </script>
 
 <template>
-  <WeatherSymbols />
-  <main class="page-pad mx-auto flex max-w-[480px] flex-col gap-3.5">
+  <main class="page-pad mx-auto flex max-w-[480px] flex-col gap-[18px]">
     <header class="flex items-center justify-between gap-2.5">
       <button
         type="button"
-        class="inline-flex min-h-11 min-w-0 cursor-pointer items-center gap-2 rounded-full border border-line bg-surface pr-4 pl-3 font-medium"
+        class="inline-flex min-h-11 min-w-0 cursor-pointer items-center gap-1.5 rounded-full bg-surface-2 pr-3.5 pl-4 font-medium"
         @click="sheetOpen = true"
       >
-        <svg class="flex-none" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M10 18s5.5-5 5.5-9.2a5.5 5.5 0 0 0-11 0C4.5 13 10 18 10 18z" />
-          <circle cx="10" cy="8.8" r="2" />
-        </svg>
         <span class="truncate">{{ settings.county }} {{ settings.district }}</span>
+        <svg class="flex-none" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 8l5 5 5-5" />
+        </svg>
       </button>
       <button
         type="button"
-        class="grid size-11 flex-none cursor-pointer place-items-center rounded-full border border-line bg-surface"
+        class="grid size-11 flex-none cursor-pointer place-items-center"
         :aria-label="t('aria_set')"
         @click="sheetOpen = true"
       >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
           <path d="M3 6h9M16 6h1M3 14h1M8 14h9" />
           <circle cx="14" cy="6" r="2" />
           <circle cx="6" cy="14" r="2" />
@@ -96,7 +98,7 @@ const updated = computed(() => (forecast.fetchedAt.value ? taipeiClock(forecast.
       <h1 class="text-2xl leading-tight font-bold">{{ t('load_err') }}</h1>
       <p class="text-[15px] text-fg">{{ t('err_hint') }}</p>
       <p class="font-mono text-xs text-muted">{{ forecast.errorCode.value }}</p>
-      <button type="button" class="min-h-11 cursor-pointer rounded-xl bg-accent px-5 font-bold text-bg" @click="forecast.reload()">
+      <button type="button" class="min-h-11 cursor-pointer rounded-full bg-accent px-5 font-bold text-bg" @click="forecast.reload()">
         {{ t('retry') }}
       </button>
     </section>
@@ -107,12 +109,14 @@ const updated = computed(() => (forecast.fetchedAt.value ? taipeiClock(forecast.
       <h1 class="text-2xl leading-tight font-bold">{{ t('no_data') }}</h1>
     </section>
 
-    <div v-else class="flex flex-col gap-3.5 transition-opacity" :class="loading ? 'opacity-55' : ''">
-      <VerdictCard :analysis="analysis" />
-      <WhenBar :collect-day="win.collectDay" :start-note="startNote" />
+    <div v-else class="flex flex-col gap-[18px] transition-opacity" :class="loading ? 'opacity-55' : ''">
+      <VerdictCard :analysis="analysis" :date-label="dateLabel" :collect-day="win.collectDay" :start-note="startNote" />
+      <template v-if="hasWeek">
+        <hr class="border-line" />
+        <BestDays :picks="shownPicks" :best="bestDay" />
+      </template>
+      <hr class="border-line" />
       <HourlyChart :rows="win.rows" :label="chartLabel" />
-      <DryMeter :score="analysis.score" :dry="analysis.dry" :when-text="collectWhen" :collect-time="hh(settings.collectHour)" />
-      <BestDays v-if="hasWeek" :picks="weekPicks" :best="bestDay" />
     </div>
 
     <footer class="flex flex-wrap justify-between gap-x-3.5 gap-y-1 text-xs text-muted">

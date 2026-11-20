@@ -76,28 +76,31 @@ const themes: { v: ThemeChoice; key: MsgKey }[] = [
 const startHours = Array.from({ length: 7 }, (_, i) => 17 + i)
 const collectHours = Array.from({ length: 6 }, (_, i) => 5 + i)
 
-const field = 'min-h-11 w-full rounded-xl border border-line bg-surface-2 px-3'
-const segBtn = 'min-h-11 min-w-0 flex-1 cursor-pointer border-0 bg-surface-2 aria-pressed:bg-fg aria-pressed:font-medium aria-pressed:text-bg'
+const field = 'min-h-[46px] w-full rounded-[14px] border-0 bg-surface-2 px-3.5'
+const segBtn =
+  'min-h-10 min-w-0 flex-1 cursor-pointer rounded-full border-0 bg-transparent text-muted aria-pressed:bg-surface aria-pressed:font-bold aria-pressed:text-fg aria-pressed:shadow-sm'
+const segGroup = 'flex rounded-full bg-surface-2 p-[3px]'
 </script>
 
 <template>
   <div v-if="open" class="fixed inset-0 z-20 flex items-end justify-center" @keydown.esc="emit('close')">
     <div class="absolute inset-0 bg-scrim" @click="emit('close')" />
     <div
-      class="sheet-pad relative flex max-h-[88%] w-full max-w-[480px] flex-col gap-4 overflow-auto rounded-t-[22px] bg-surface text-fg"
+      class="sheet-pad relative flex max-h-[88%] w-full max-w-[480px] flex-col gap-[18px] overflow-auto rounded-t-[28px] bg-surface text-fg"
       role="dialog"
       aria-modal="true"
       aria-labelledby="sheet-title"
     >
+      <div class="mx-auto -mt-2 h-1 w-9 rounded-full bg-line" aria-hidden="true" />
       <div class="flex items-center justify-between">
-        <h2 id="sheet-title" class="text-lg font-bold">{{ t('settings') }}</h2>
-        <button ref="doneBtn" type="button" class="min-h-11 cursor-pointer rounded-xl bg-accent px-5 font-bold text-bg" @click="emit('close')">
+        <h2 id="sheet-title" class="font-display text-[22px]">{{ t('settings') }}</h2>
+        <button ref="doneBtn" type="button" class="min-h-11 cursor-pointer rounded-full bg-accent px-[22px] font-bold text-bg" @click="emit('close')">
           {{ t('done') }}
         </button>
       </div>
 
       <div class="flex flex-col gap-2.5">
-        <span class="text-[13px] text-muted">{{ t('loc') }}</span>
+        <span class="text-xs tracking-[0.06em] text-muted">{{ t('loc') }}</span>
         <div class="grid grid-cols-2 gap-2.5">
           <div class="flex min-w-0 flex-col gap-1.5">
             <label for="county-select" class="text-xs text-muted">{{ t('county') }}</label>
@@ -114,7 +117,7 @@ const segBtn = 'min-h-11 min-w-0 flex-1 cursor-pointer border-0 bg-surface-2 ari
         </div>
         <button
           type="button"
-          class="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-surface-2 px-3 disabled:opacity-60"
+          class="inline-flex min-h-[46px] cursor-pointer items-center justify-center gap-2 rounded-full border-[1.5px] border-line bg-surface px-3 font-medium disabled:opacity-60"
           :disabled="busy"
           @click="useMyLocation"
         >
@@ -129,30 +132,40 @@ const segBtn = 'min-h-11 min-w-0 flex-1 cursor-pointer border-0 bg-surface-2 ari
 
       <div class="grid grid-cols-2 gap-2.5">
         <div class="flex min-w-0 flex-col gap-1.5">
-          <label for="start-default" class="text-[13px] text-muted">{{ t('start_def') }}</label>
+          <label for="start-default" class="text-xs text-muted">{{ t('start_def') }}</label>
           <select id="start-default" v-model.number="settings.startHour" :class="[field, 'font-mono']">
             <option v-for="h in startHours" :key="h" :value="h">{{ hh(h) }}</option>
           </select>
         </div>
         <div class="flex min-w-0 flex-col gap-1.5">
-          <label for="collect-default" class="text-[13px] text-muted">{{ t('collect_def') }}</label>
+          <label for="collect-default" class="text-xs text-muted">{{ t('collect_def') }}</label>
           <select id="collect-default" v-model.number="settings.collectHour" :class="[field, 'font-mono']">
             <option v-for="h in collectHours" :key="h" :value="h">{{ hh(h) }}</option>
           </select>
         </div>
       </div>
 
-      <label for="covered-check" class="flex min-h-11 cursor-pointer items-center justify-between gap-3.5">
+      <label for="covered-check" class="flex min-h-12 cursor-pointer items-center justify-between gap-3.5">
         <span>
           {{ t('covered') }}
           <small class="block text-xs text-muted">{{ t('covered_hint') }}</small>
         </span>
-        <input id="covered-check" v-model="settings.covered" type="checkbox" class="size-[22px] flex-none accent-accent" />
+        <span class="relative flex-none">
+          <input id="covered-check" v-model="settings.covered" type="checkbox" role="switch" class="peer sr-only" />
+          <span
+            class="block h-[30px] w-[52px] rounded-full border border-line bg-surface-2 transition-colors peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent"
+            aria-hidden="true"
+          />
+          <span
+            class="absolute top-[3px] left-[3px] size-6 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-[22px]"
+            aria-hidden="true"
+          />
+        </span>
       </label>
 
       <div class="flex flex-col gap-1.5">
-        <span class="text-[13px] text-muted">{{ t('lang') }}</span>
-        <div class="flex overflow-hidden rounded-xl border border-line" role="group">
+        <span class="text-xs text-muted">{{ t('lang') }}</span>
+        <div :class="segGroup" role="group">
           <button
             v-for="l in langs"
             :key="l.v"
@@ -165,8 +178,8 @@ const segBtn = 'min-h-11 min-w-0 flex-1 cursor-pointer border-0 bg-surface-2 ari
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <span class="text-[13px] text-muted">{{ t('theme') }}</span>
-        <div class="flex overflow-hidden rounded-xl border border-line" role="group">
+        <span class="text-xs text-muted">{{ t('theme') }}</span>
+        <div :class="segGroup" role="group">
           <button
             v-for="th in themes"
             :key="th.v"
