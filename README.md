@@ -4,14 +4,13 @@
 
 🔗 **線上使用:<https://laundry-check.pages.dev/>**
 
-<img width="178" height="387" alt="截圖 2026-11-18 下午6 15 34" src="https://github.com/user-attachments/assets/ee0590c9-6b17-40ef-a6b5-e47d22b5ea0e" />
+<img width="178" height="387" alt="主要圖片" src="https://github.com/user-attachments/assets/6956b886-c070-43c9-9350-28115f7acd47" />
 
-<img width="178" height="387" alt="截圖 2026-11-19 上午10 05 13" src="https://github.com/user-attachments/assets/3d03adcd-9c73-46e4-a2a8-fcd7cf0a1022" />
+<img width="178" height="387" alt="設定功能" src="https://github.com/user-attachments/assets/7297c042-ebd5-4f24-8edd-4edb3b8f11aa" />
 
-<img width="178" height="387" alt="截圖 2026-11-18 下午6 16 34" src="https://github.com/user-attachments/assets/5ab26636-e68b-4743-ab8a-29ffbd938b3b" />
+<img width="178" height="387" alt="夜間模式" src="https://github.com/user-attachments/assets/8d529bea-6379-4128-ab48-b119d2264dcd" />
 
-<img width="178" height="387" alt="截圖 2026-11-19 上午10 06 21" src="https://github.com/user-attachments/assets/499eedc7-7b62-43f8-b60c-fa553a4ebc10" />
-
+<img width="178" height="387" alt="多國語" src="https://github.com/user-attachments/assets/fcafb988-f848-4a4c-8224-31851b2274bf" />
 
 
 ## 為什麼做這個
